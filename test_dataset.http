@@ -1,0 +1,18 @@
+### Upload dataset
+POST http://127.0.0.1:8000/datasets/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="sample_students.csv"
+Content-Type: text/csv
+
+< ./sample_students.csv
+--boundary--
+
+### List datasets
+GET http://127.0.0.1:8000/datasets
+Accept: application/json
+
+### Preview dataset
+GET http://127.0.0.1:8000/datasets/PUT_DATASET_ID_HERE
+Accept: application/json

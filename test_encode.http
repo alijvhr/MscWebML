@@ -1,0 +1,19 @@
+### One-hot encode dataset
+POST http://127.0.0.1:8000/encode
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "method": "onehot",
+  "target_column": "passed"
+}
+
+### Label encode dataset
+POST http://127.0.0.1:8000/encode
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "method": "label",
+  "target_column": "passed"
+}

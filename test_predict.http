@@ -1,0 +1,13 @@
+### Predict
+POST http://127.0.0.1:8000/predict
+Content-Type: application/json
+
+{
+  "model_id": "PUT_MODEL_ID_HERE",
+  "input_data": {
+    "age": 20,
+    "hours_studied": 6,
+    "major": "CS",
+    "score": 80
+  }
+}

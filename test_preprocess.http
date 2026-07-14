@@ -1,0 +1,9 @@
+### Preprocess dataset
+POST http://127.0.0.1:8000/preprocess
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "fill_missing": true,
+  "normalize": true
+}

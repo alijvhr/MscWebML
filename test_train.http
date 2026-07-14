@@ -1,0 +1,37 @@
+### Train decision tree
+POST http://127.0.0.1:8000/train
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "algorithm": "decision_tree",
+  "target_column": "passed"
+}
+
+### Train svm
+POST http://127.0.0.1:8000/train
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "algorithm": "svm",
+  "target_column": "passed"
+}
+
+### Train knn
+POST http://127.0.0.1:8000/train
+Content-Type: application/json
+
+{
+  "dataset_id": "PUT_DATASET_ID_HERE",
+  "algorithm": "knn",
+  "target_column": "passed"
+}
+
+### List models
+GET http://127.0.0.1:8000/models
+Accept: application/json
+
+### Get model by id with metrics
+GET http://127.0.0.1:8000/models/PUT_MODEL_ID_HERE
+Accept: application/json
