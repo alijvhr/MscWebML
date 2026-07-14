@@ -4,6 +4,4 @@ python-multipart
 pandas
 numpy
 scikit-learn
-
-pydantic
 pydantic
