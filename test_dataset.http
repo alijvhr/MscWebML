@@ -13,6 +13,24 @@ Content-Type: text/csv
 GET http://127.0.0.1:8000/datasets
 Accept: application/json
 
+### Import UCI dataset by ID
+POST http://127.0.0.1:8000/datasets/uci
+Content-Type: application/json
+Accept: application/json
+
+{
+  "uci_id": 53
+}
+
+### Import UCI dataset by name
+POST http://127.0.0.1:8000/datasets/uci
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Iris"
+}
+
 ### Preview dataset
-GET http://127.0.0.1:8000/datasets/PUT_DATASET_ID_HERE
+GET http://127.0.0.1:8000/datasets/PUT_DATASET_ID_HERE?rows=8
 Accept: application/json
