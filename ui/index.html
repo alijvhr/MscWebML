@@ -7,14 +7,14 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
+  <header class="top-bar">
     <div>
       <h1>Machine Learning API</h1>
       <p>Upload datasets, prepare data, train models, inspect metrics, and predict.</p>
     </div>
     <label class="api-box">
       API URL
-      <input id="apiUrl" type="url" value="http://127.0.0.1:8000">
+      <input id="api-url" type="url" value="http://127.0.0.1:8000">
     </label>
   </header>
 
@@ -22,13 +22,13 @@
     <section class="panel">
       <div class="panel-head">
         <h2>Datasets</h2>
-        <button id="refreshDatasetsBtn" type="button">Refresh</button>
+        <button id="refresh-datasets-btn" type="button">Refresh</button>
       </div>
 
-      <form id="uploadForm" class="stack">
+      <form id="upload-form" class="stack">
         <label>
           CSV file
-          <input id="datasetFile" type="file" accept=".csv" required>
+          <input id="dataset-file" type="file" accept=".csv" required>
         </label>
         <button type="submit">Upload Dataset</button>
       </form>
@@ -36,23 +36,24 @@
       <div class="split">
         <label>
           Selected dataset
-          <select id="datasetSelect"></select>
+          <select id="dataset-select"></select>
         </label>
-        <button id="previewDatasetBtn" type="button">Preview</button>
+        <button id="preview-dataset-btn" type="button">Preview</button>
       </div>
 
-      <div id="datasetPreview" class="table-wrap"></div>
+      <p id="dataset-preview-empty" hidden>No rows to show.</p>
+      <div id="dataset-preview" class="table-wrap" hidden></div>
     </section>
 
     <section class="panel">
       <h2>Preprocess</h2>
-      <form id="preprocessForm" class="stack">
+      <form id="preprocess-form" class="stack">
         <label>
           Dataset
-          <select id="preprocessDatasetSelect"></select>
+          <select id="preprocess-dataset-select"></select>
         </label>
         <label class="check-row">
-          <input id="fillMissing" type="checkbox" checked>
+          <input id="fill-missing" type="checkbox" checked>
           Fill missing values
         </label>
         <label class="check-row">
@@ -65,21 +66,21 @@
 
     <section class="panel">
       <h2>Encode</h2>
-      <form id="encodeForm" class="stack">
+      <form id="encode-form" class="stack">
         <label>
           Dataset
-          <select id="encodeDatasetSelect"></select>
+          <select id="encode-dataset-select"></select>
         </label>
         <label>
           Method
-          <select id="encodeMethod">
+          <select id="encode-method">
             <option value="onehot">One-hot</option>
             <option value="label">Label</option>
           </select>
         </label>
         <label>
           Target column
-          <input id="encodeTarget" type="text" placeholder="Example: passed">
+          <input id="encode-target" type="text" placeholder="Example: passed">
         </label>
         <button type="submit">Create Encoded Dataset</button>
       </form>
@@ -87,10 +88,10 @@
 
     <section class="panel">
       <h2>Train</h2>
-      <form id="trainForm" class="stack">
+      <form id="train-form" class="stack">
         <label>
           Dataset
-          <select id="trainDatasetSelect"></select>
+          <select id="train-dataset-select"></select>
         </label>
         <label>
           Algorithm
@@ -102,11 +103,11 @@
         </label>
         <label>
           Target column
-          <input id="targetColumn" type="text" placeholder="Example: passed">
+          <input id="target-column" type="text" placeholder="Example: passed">
         </label>
         <label>
           Feature columns
-          <input id="featureColumns" type="text" placeholder="Optional: age,score,hours_studied">
+          <input id="feature-columns" type="text" placeholder="Optional: age,score,hours_studied">
         </label>
         <button type="submit">Train Model</button>
       </form>
@@ -115,28 +116,66 @@
     <section class="panel wide">
       <div class="panel-head">
         <h2>Models</h2>
-        <button id="refreshModelsBtn" type="button">Refresh</button>
+        <button id="refresh-models-btn" type="button">Refresh</button>
       </div>
       <div class="split">
         <label>
           Selected model
-          <select id="modelSelect"></select>
+          <select id="model-select"></select>
         </label>
-        <button id="loadModelBtn" type="button">Load Metrics</button>
+        <button id="load-model-btn" type="button">Load Metrics</button>
       </div>
-      <div id="modelDetails" class="model-details"></div>
+      <div id="model-details" class="model-details" hidden>
+        <div id="metric-grid" class="metric-grid">
+          <div class="metric">
+            <span>Score</span>
+            <strong data-metric="score">N/A</strong>
+          </div>
+          <div class="metric">
+            <span>Accuracy</span>
+            <strong data-metric="accuracy">N/A</strong>
+          </div>
+          <div class="metric">
+            <span>Precision</span>
+            <strong data-metric="precision">N/A</strong>
+          </div>
+          <div class="metric">
+            <span>Sensitivity</span>
+            <strong data-metric="sensitivity">N/A</strong>
+          </div>
+          <div class="metric">
+            <span>Specificity</span>
+            <strong data-metric="specificity">N/A</strong>
+          </div>
+          <div class="metric">
+            <span>F1 score</span>
+            <strong data-metric="f1_score">N/A</strong>
+          </div>
+        </div>
+        <div>
+          <p><strong>Model:</strong> <span id="model-id"></span></p>
+          <p><strong>Algorithm:</strong> <span id="model-algorithm"></span></p>
+          <p><strong>Dataset:</strong> <span id="model-dataset-id"></span></p>
+          <p><strong>Target:</strong> <span id="model-target-column"></span></p>
+        </div>
+        <div>
+          <h2>Confusion Matrix</h2>
+          <p id="confusion-matrix-empty" hidden>No confusion matrix for this model.</p>
+          <div id="confusion-matrix" class="table-wrap" hidden></div>
+        </div>
+      </div>
     </section>
 
     <section class="panel wide">
       <h2>Predict</h2>
-      <form id="predictForm" class="stack">
+      <form id="predict-form" class="stack">
         <label>
           Model
-          <select id="predictModelSelect"></select>
+          <select id="predict-model-select"></select>
         </label>
         <label>
           Input data JSON
-          <textarea id="predictInput" rows="8">{
+          <textarea id="predict-input" rows="8">{
   "age": 20,
   "hours_studied": 6,
   "major_CS": true,
@@ -147,7 +186,7 @@
         </label>
         <button type="submit">Predict</button>
       </form>
-      <pre id="predictionOutput" class="output"></pre>
+      <pre id="prediction-output" class="output"></pre>
     </section>
   </main>
 

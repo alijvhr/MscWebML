@@ -1,40 +1,10 @@
-const elements = {
-  apiUrl: document.getElementById("apiUrl"),
-  toast: document.getElementById("toast"),
-  uploadForm: document.getElementById("uploadForm"),
-  datasetFile: document.getElementById("datasetFile"),
-  refreshDatasetsBtn: document.getElementById("refreshDatasetsBtn"),
-  datasetSelect: document.getElementById("datasetSelect"),
-  preprocessDatasetSelect: document.getElementById("preprocessDatasetSelect"),
-  encodeDatasetSelect: document.getElementById("encodeDatasetSelect"),
-  trainDatasetSelect: document.getElementById("trainDatasetSelect"),
-  previewDatasetBtn: document.getElementById("previewDatasetBtn"),
-  datasetPreview: document.getElementById("datasetPreview"),
-  preprocessForm: document.getElementById("preprocessForm"),
-  fillMissing: document.getElementById("fillMissing"),
-  normalize: document.getElementById("normalize"),
-  encodeForm: document.getElementById("encodeForm"),
-  encodeMethod: document.getElementById("encodeMethod"),
-  encodeTarget: document.getElementById("encodeTarget"),
-  trainForm: document.getElementById("trainForm"),
-  algorithm: document.getElementById("algorithm"),
-  targetColumn: document.getElementById("targetColumn"),
-  featureColumns: document.getElementById("featureColumns"),
-  refreshModelsBtn: document.getElementById("refreshModelsBtn"),
-  modelSelect: document.getElementById("modelSelect"),
-  predictModelSelect: document.getElementById("predictModelSelect"),
-  loadModelBtn: document.getElementById("loadModelBtn"),
-  modelDetails: document.getElementById("modelDetails"),
-  predictForm: document.getElementById("predictForm"),
-  predictInput: document.getElementById("predictInput"),
-  predictionOutput: document.getElementById("predictionOutput"),
-};
+const getElem = id => document.getElementById(id);
 
 let datasets = [];
 let models = [];
 
 function apiBase() {
-  return elements.apiUrl.value.replace(/\/$/, "");
+  return getElem("api-url").value.replace(/\/$/, "");
 }
 
 async function request(path, options = {}) {
@@ -54,11 +24,11 @@ async function request(path, options = {}) {
 }
 
 function showToast(message, type = "success") {
-  elements.toast.textContent = message;
-  elements.toast.className = `toast ${type}`;
-  elements.toast.hidden = false;
+  getElem("toast").textContent = message;
+  getElem("toast").className = `toast ${type}`;
+  getElem("toast").hidden = false;
   window.setTimeout(() => {
-    elements.toast.hidden = true;
+    getElem("toast").hidden = true;
   }, 3500);
 }
 
@@ -67,7 +37,7 @@ function selectedValue(select) {
 }
 
 function fillSelect(select, items, labelFn) {
-  select.innerHTML = "";
+  select.replaceChildren();
 
   if (items.length === 0) {
     const option = document.createElement("option");
@@ -87,16 +57,21 @@ function fillSelect(select, items, labelFn) {
 
 function fillDatasetSelects() {
   const label = (dataset) => `${dataset.id} - ${dataset.original_name}`;
-  fillSelect(elements.datasetSelect, datasets, label);
-  fillSelect(elements.preprocessDatasetSelect, datasets, label);
-  fillSelect(elements.encodeDatasetSelect, datasets, label);
-  fillSelect(elements.trainDatasetSelect, datasets, label);
+  const elems = [
+    "dataset-select",
+    "preprocess-dataset-select",
+    "encode-dataset-select",
+    "train-dataset-select",
+  ];
+  for (const id of elems) {
+    fillSelect(getElem(id), datasets, label);
+  }
 }
 
 function fillModelSelects() {
   const label = (model) => `${model.id} - ${model.algorithm}`;
-  fillSelect(elements.modelSelect, models, label);
-  fillSelect(elements.predictModelSelect, models, label);
+  fillSelect(getElem("model-select"), models, label);
+  fillSelect(getElem("predict-model-select"), models, label);
 }
 
 function parseColumns(value) {
@@ -128,90 +103,106 @@ async function loadModels() {
   fillModelSelects();
 }
 
-function renderTable(rows) {
+function showTable(tableContainer, emptyMessage, rows) {
+  tableContainer.replaceChildren();
+
   if (!rows || rows.length === 0) {
-    return "<p>No rows to show.</p>";
+    tableContainer.hidden = true;
+    emptyMessage.hidden = false;
+    return;
   }
 
-  const columns = Object.keys(rows[0]);
-  const head = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("");
-  const body = rows
-    .map((row) => {
-      const cells = columns
-        .map((column) => `<td>${escapeHtml(String(row[column] ?? ""))}</td>`)
-        .join("");
-      return `<tr>${cells}</tr>`;
-    })
-    .join("");
+  tableContainer.appendChild(createTable(rows));
+  tableContainer.hidden = false;
+  emptyMessage.hidden = true;
+}
 
-  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+function createTable(rows, rowHeaderLabels = null, cornerLabel = null) {
+  const columns = Object.keys(rows[0]);
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const tbody = document.createElement("tbody");
+  const headerRow = document.createElement("tr");
+
+  if (cornerLabel !== null) {
+    headerRow.appendChild(createCell("th", cornerLabel));
+  }
+
+  columns.forEach((column) => {
+    headerRow.appendChild(createCell("th", column));
+  });
+
+  rows.forEach((row, index) => {
+    const tableRow = document.createElement("tr");
+
+    if (rowHeaderLabels) {
+      tableRow.appendChild(createCell("th", rowHeaderLabels[index]));
+    }
+
+    columns.forEach((column) => {
+      tableRow.appendChild(createCell("td", row[column] ?? ""));
+    });
+
+    tbody.appendChild(tableRow);
+  });
+
+  thead.appendChild(headerRow);
+  table.append(thead, tbody);
+  return table;
+}
+
+function createCell(tagName, value) {
+  const cell = document.createElement(tagName);
+  cell.textContent = String(value);
+  return cell;
 }
 
 function renderModel(model) {
   const metrics = model.metrics || {};
-  const metricNames = [
-    ["score", "Score"],
-    ["accuracy", "Accuracy"],
-    ["precision", "Precision"],
-    ["sensitivity", "Sensitivity"],
-    ["specificity", "Specificity"],
-    ["f1_score", "F1 score"],
-  ];
+  document.querySelectorAll("[data-metric]").forEach((metricElem) => {
+    const key = metricElem.dataset.metric;
+    const value = metrics[key];
+    metricElem.textContent = value === null || value === undefined ? "N/A" : Number(value).toFixed(4);
+  });
 
-  const metricCards = metricNames
-    .map(([key, label]) => {
-      const value = metrics[key] === null || metrics[key] === undefined ? "N/A" : Number(metrics[key]).toFixed(4);
-      return `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
-    })
-    .join("");
+  getElem("model-id").textContent = model.id;
+  getElem("model-algorithm").textContent = model.algorithm;
+  getElem("model-dataset-id").textContent = model.dataset_id;
+  getElem("model-target-column").textContent = model.target_column || "None";
 
-  const matrix = metrics.confusion_matrix
-    ? renderConfusionMatrix(metrics.confusion_matrix)
-    : "<p>No confusion matrix for this model.</p>";
-
-  elements.modelDetails.innerHTML = `
-    <div class="metric-grid">${metricCards}</div>
-    <div>
-      <p><strong>Model:</strong> ${escapeHtml(model.id)}</p>
-      <p><strong>Algorithm:</strong> ${escapeHtml(model.algorithm)}</p>
-      <p><strong>Dataset:</strong> ${escapeHtml(model.dataset_id)}</p>
-      <p><strong>Target:</strong> ${escapeHtml(model.target_column || "None")}</p>
-    </div>
-    <div>
-      <h2>Confusion Matrix</h2>
-      <div class="table-wrap">${matrix}</div>
-    </div>
-  `;
+  renderConfusionMatrix(metrics.confusion_matrix);
+  getElem("model-details").hidden = false;
 }
 
 function renderConfusionMatrix(confusionMatrix) {
+  const container = getElem("confusion-matrix");
+  const emptyMessage = getElem("confusion-matrix-empty");
+  container.replaceChildren();
+
+  if (!confusionMatrix) {
+    container.hidden = true;
+    emptyMessage.hidden = false;
+    return;
+  }
+
   const labels = confusionMatrix.labels || [];
   const matrix = confusionMatrix.matrix || [];
-  const header = ["Actual / Predicted", ...labels]
-    .map((label) => `<th>${escapeHtml(String(label))}</th>`)
-    .join("");
-  const body = matrix
-    .map((row, index) => {
-      const cells = row.map((value) => `<td>${escapeHtml(String(value))}</td>`).join("");
-      return `<tr><th>${escapeHtml(String(labels[index]))}</th>${cells}</tr>`;
-    })
-    .join("");
+  if (labels.length === 0 || matrix.length === 0) {
+    container.hidden = true;
+    emptyMessage.hidden = false;
+    return;
+  }
 
-  return `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+  const rows = matrix.map((row) => Object.fromEntries(row.map((value, index) => [labels[index], value])));
+
+  container.appendChild(createTable(rows, labels, "Actual / Predicted"));
+  container.hidden = false;
+  emptyMessage.hidden = true;
 }
 
-function escapeHtml(value) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-elements.uploadForm.addEventListener("submit", async (event) => {
+getElem("upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const file = elements.datasetFile.files[0];
+  const file = getElem("dataset-file").files[0];
   if (!file) {
     showToast("Choose a CSV file first.", "error");
     return;
@@ -232,7 +223,7 @@ elements.uploadForm.addEventListener("submit", async (event) => {
   }
 });
 
-elements.refreshDatasetsBtn.addEventListener("click", async () => {
+getElem("refresh-datasets-btn").addEventListener("click", async () => {
   try {
     await loadDatasets();
     showToast("Datasets refreshed.");
@@ -241,8 +232,8 @@ elements.refreshDatasetsBtn.addEventListener("click", async () => {
   }
 });
 
-elements.previewDatasetBtn.addEventListener("click", async () => {
-  const datasetId = selectedValue(elements.datasetSelect);
+getElem("preview-dataset-btn").addEventListener("click", async () => {
+  const datasetId = selectedValue(getElem("dataset-select"));
   if (!datasetId) {
     showToast("Select a dataset first.", "error");
     return;
@@ -250,23 +241,23 @@ elements.previewDatasetBtn.addEventListener("click", async () => {
 
   try {
     const data = await request(`/datasets/${datasetId}?rows=8`);
-    elements.datasetPreview.innerHTML = renderTable(data.preview);
+    showTable(getElem("dataset-preview"), getElem("dataset-preview-empty"), data.preview);
   } catch (error) {
     showToast(error.message, "error");
   }
 });
 
-elements.preprocessForm.addEventListener("submit", async (event) => {
+getElem("preprocess-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const datasetId = selectedValue(elements.preprocessDatasetSelect);
+  const datasetId = selectedValue(getElem("preprocess-dataset-select"));
 
   try {
     const data = await request(
       "/preprocess",
       jsonBody({
         dataset_id: datasetId,
-        fill_missing: elements.fillMissing.checked,
-        normalize: elements.normalize.checked,
+        fill_missing: getElem("fill-missing").checked,
+        normalize: getElem("normalize").checked,
       })
     );
     showToast(`Created dataset ${data.new_dataset_id}`);
@@ -276,16 +267,16 @@ elements.preprocessForm.addEventListener("submit", async (event) => {
   }
 });
 
-elements.encodeForm.addEventListener("submit", async (event) => {
+getElem("encode-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const targetColumn = elements.encodeTarget.value.trim();
+  const targetColumn = getElem("encode-target").value.trim();
 
   try {
     const data = await request(
       "/encode",
       jsonBody({
-        dataset_id: selectedValue(elements.encodeDatasetSelect),
-        method: elements.encodeMethod.value,
+        dataset_id: selectedValue(getElem("encode-dataset-select")),
+        method: getElem("encode-method").value,
         target_column: targetColumn || null,
       })
     );
@@ -296,14 +287,14 @@ elements.encodeForm.addEventListener("submit", async (event) => {
   }
 });
 
-elements.trainForm.addEventListener("submit", async (event) => {
+getElem("train-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const features = parseColumns(elements.featureColumns.value);
-  const target = elements.targetColumn.value.trim();
+  const features = parseColumns(getElem("feature-columns").value);
+  const target = getElem("target-column").value.trim();
 
   const body = {
-    dataset_id: selectedValue(elements.trainDatasetSelect),
-    algorithm: elements.algorithm.value,
+    dataset_id: selectedValue(getElem("train-dataset-select")),
+    algorithm: getElem("algorithm").value,
     target_column: target || null,
     feature_columns: features.length ? features : null,
   };
@@ -312,14 +303,14 @@ elements.trainForm.addEventListener("submit", async (event) => {
     const data = await request("/train", jsonBody(body));
     showToast(`Trained model ${data.model_id}`);
     await loadModels();
-    elements.modelSelect.value = data.model_id;
+    getElem("model-select").value = data.model_id;
     renderModel(await request(`/models/${data.model_id}`));
   } catch (error) {
     showToast(error.message, "error");
   }
 });
 
-elements.refreshModelsBtn.addEventListener("click", async () => {
+getElem("refresh-models-btn").addEventListener("click", async () => {
   try {
     await loadModels();
     showToast("Models refreshed.");
@@ -328,8 +319,8 @@ elements.refreshModelsBtn.addEventListener("click", async () => {
   }
 });
 
-elements.loadModelBtn.addEventListener("click", async () => {
-  const modelId = selectedValue(elements.modelSelect);
+getElem("load-model-btn").addEventListener("click", async () => {
+  const modelId = selectedValue(getElem("model-select"));
   if (!modelId) {
     showToast("Select a model first.", "error");
     return;
@@ -343,19 +334,19 @@ elements.loadModelBtn.addEventListener("click", async () => {
   }
 });
 
-elements.predictForm.addEventListener("submit", async (event) => {
+getElem("predict-form").addEventListener("submit", async (event) => {
   event.preventDefault();
 
   try {
-    const inputData = JSON.parse(elements.predictInput.value);
+    const inputData = JSON.parse(getElem("predict-input").value);
     const data = await request(
       "/predict",
       jsonBody({
-        model_id: selectedValue(elements.predictModelSelect),
+        model_id: selectedValue(getElem("predict-model-select")),
         input_data: inputData,
       })
     );
-    elements.predictionOutput.textContent = JSON.stringify(data, null, 2);
+    getElem("prediction-output").textContent = JSON.stringify(data, null, 2);
     showToast("Prediction complete.");
   } catch (error) {
     showToast(error.message, "error");
