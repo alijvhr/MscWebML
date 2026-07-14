@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML API UI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Machine Learning API</h1>
+      <p>Upload datasets, prepare data, train models, inspect metrics, and predict.</p>
+    </div>
+    <label class="api-box">
+      API URL
+      <input id="apiUrl" type="url" value="http://127.0.0.1:8000">
+    </label>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Datasets</h2>
+        <button id="refreshDatasetsBtn" type="button">Refresh</button>
+      </div>
+
+      <form id="uploadForm" class="stack">
+        <label>
+          CSV file
+          <input id="datasetFile" type="file" accept=".csv" required>
+        </label>
+        <button type="submit">Upload Dataset</button>
+      </form>
+
+      <div class="split">
+        <label>
+          Selected dataset
+          <select id="datasetSelect"></select>
+        </label>
+        <button id="previewDatasetBtn" type="button">Preview</button>
+      </div>
+
+      <div id="datasetPreview" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Preprocess</h2>
+      <form id="preprocessForm" class="stack">
+        <label>
+          Dataset
+          <select id="preprocessDatasetSelect"></select>
+        </label>
+        <label class="check-row">
+          <input id="fillMissing" type="checkbox" checked>
+          Fill missing values
+        </label>
+        <label class="check-row">
+          <input id="normalize" type="checkbox" checked>
+          Normalize numeric columns
+        </label>
+        <button type="submit">Create Preprocessed Dataset</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Encode</h2>
+      <form id="encodeForm" class="stack">
+        <label>
+          Dataset
+          <select id="encodeDatasetSelect"></select>
+        </label>
+        <label>
+          Method
+          <select id="encodeMethod">
+            <option value="onehot">One-hot</option>
+            <option value="label">Label</option>
+          </select>
+        </label>
+        <label>
+          Target column
+          <input id="encodeTarget" type="text" placeholder="Example: passed">
+        </label>
+        <button type="submit">Create Encoded Dataset</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Train</h2>
+      <form id="trainForm" class="stack">
+        <label>
+          Dataset
+          <select id="trainDatasetSelect"></select>
+        </label>
+        <label>
+          Algorithm
+          <select id="algorithm">
+            <option value="decision_tree">Decision tree</option>
+            <option value="svm">SVM</option>
+            <option value="knn">KNN</option>
+          </select>
+        </label>
+        <label>
+          Target column
+          <input id="targetColumn" type="text" placeholder="Example: passed">
+        </label>
+        <label>
+          Feature columns
+          <input id="featureColumns" type="text" placeholder="Optional: age,score,hours_studied">
+        </label>
+        <button type="submit">Train Model</button>
+      </form>
+    </section>
+
+    <section class="panel wide">
+      <div class="panel-head">
+        <h2>Models</h2>
+        <button id="refreshModelsBtn" type="button">Refresh</button>
+      </div>
+      <div class="split">
+        <label>
+          Selected model
+          <select id="modelSelect"></select>
+        </label>
+        <button id="loadModelBtn" type="button">Load Metrics</button>
+      </div>
+      <div id="modelDetails" class="model-details"></div>
+    </section>
+
+    <section class="panel wide">
+      <h2>Predict</h2>
+      <form id="predictForm" class="stack">
+        <label>
+          Model
+          <select id="predictModelSelect"></select>
+        </label>
+        <label>
+          Input data JSON
+          <textarea id="predictInput" rows="8">{
+  "age": 20,
+  "hours_studied": 6,
+  "major_CS": true,
+  "major_History": false,
+  "major_Math": false,
+  "score": 80
+}</textarea>
+        </label>
+        <button type="submit">Predict</button>
+      </form>
+      <pre id="predictionOutput" class="output"></pre>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
