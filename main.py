@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -56,13 +57,12 @@ class UciDatasetRequest(BaseModel):
     uci_id: int | None = None
     name: str | None = None
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
 
 # region Home
-@app.on_event("startup")
-def startup():
-    init_db()
-
-
 @app.get("/")
 def root():
     return {"message": "Machine Learning API is running"}

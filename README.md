@@ -16,7 +16,6 @@ uvicorn main:app --reload
 
 - `POST /datasets/upload` upload a CSV
 - `GET /datasets` list datasets
-- `GET /datasets/{dataset_id}` preview dataset
 - `POST /preprocess` fill missing and normalize
 - `POST /encode` one-hot or label encoding
 - `POST /train` train model
