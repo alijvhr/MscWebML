@@ -223,6 +223,32 @@ getElem("upload-form").addEventListener("submit", async (event) => {
   }
 });
 
+getElem("uci-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const uciId = getElem("uci-id").value.trim();
+  const name = getElem("uci-name").value.trim();
+
+  if (!uciId && !name) {
+    showToast("Enter a UCI dataset ID or name.", "error");
+    return;
+  }
+
+  try {
+    const data = await request(
+      "/datasets/uci",
+      jsonBody({
+        uci_id: uciId ? Number(uciId) : null,
+        name: name || null,
+      })
+    );
+    showToast(`Imported UCI dataset ${data.dataset_id}`);
+    await loadDatasets();
+    getElem("dataset-select").value = data.dataset_id;
+  } catch (error) {
+    showToast(error.message, "error");
+  }
+});
+
 getElem("refresh-datasets-btn").addEventListener("click", async () => {
   try {
     await loadDatasets();

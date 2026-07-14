@@ -52,6 +52,11 @@ class PredictRequest(BaseModel):
     input_data: dict[str, Any] | list[dict[str, Any]]
 
 
+class UciDatasetRequest(BaseModel):
+    uci_id: int | None = None
+    name: str | None = None
+
+
 # region Home
 @app.on_event("startup")
 def startup():
@@ -77,6 +82,11 @@ async def upload_dataset(file: UploadFile = File(...)):
 @app.get("/datasets")
 def list_datasets():
     return dataset_service.list_all()
+
+
+@app.post("/datasets/uci")
+def import_uci_dataset(request: UciDatasetRequest):
+    return dataset_service.import_uci_dataset(request.uci_id, request.name)
 
 
 @app.get("/datasets/{dataset_id}")
